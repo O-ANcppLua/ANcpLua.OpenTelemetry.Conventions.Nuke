@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore Nuke.OpenTelemetry.Conventions.slnx
+
+      - name: Build (Release)
+        run: dotnet build Nuke.OpenTelemetry.Conventions.slnx -c Release --no-restore
+
+      - name: Pack (Release)
+        run: dotnet pack src/Nuke.OpenTelemetry.Conventions/Nuke.OpenTelemetry.Conventions.csproj -c Release --no-build -o artifacts
+
+      - name: Upload .nupkg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/*.nupkg
+          retention-days: 30

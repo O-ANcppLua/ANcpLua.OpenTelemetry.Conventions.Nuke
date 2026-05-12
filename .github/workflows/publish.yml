@@ -1,0 +1,85 @@
+name: Publish to GitHub Packages (NuGet)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override package version (semver, e.g. 0.1.0). Leave blank to use the csproj version.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  packages: write     # required to publish to GitHub Packages NuGet feed
+  id-token: write     # reserved for future NuGet provenance attestations
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: github-packages
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Resolve package version
+        shell: bash
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$DISPATCH_VERSION" ]; then
+            version="$DISPATCH_VERSION"
+          elif [ "$EVENT_NAME" = "release" ] && [ -n "$RELEASE_TAG" ]; then
+            # Strip leading 'v' from tags like 'v0.1.0' → '0.1.0'.
+            version="${RELEASE_TAG#v}"
+          else
+            echo "::error::Cannot resolve package version (no inputs.version and no release tag)."
+            exit 1
+          fi
+          if ! [[ "$version" =~ ^[A-Za-z0-9._+-]+$ ]]; then
+            echo "::error::Invalid NuGet version: $version (must match ^[A-Za-z0-9._+-]+$)"
+            exit 1
+          fi
+          echo "PKG_VERSION=$version" >> "$GITHUB_ENV"
+          echo "Resolved version: $version"
+
+      - name: Restore
+        run: dotnet restore Nuke.OpenTelemetry.Conventions.slnx
+
+      - name: Build (Release)
+        run: dotnet build Nuke.OpenTelemetry.Conventions.slnx -c Release --no-restore /p:Version=$PKG_VERSION
+
+      - name: Pack (Release)
+        run: |
+          dotnet pack src/Nuke.OpenTelemetry.Conventions/Nuke.OpenTelemetry.Conventions.csproj \
+            -c Release --no-build \
+            -o artifacts \
+            /p:Version=$PKG_VERSION \
+            /p:ContinuousIntegrationBuild=true
+
+      - name: Add GitHub Packages NuGet source
+        run: |
+          dotnet nuget add source \
+            "https://nuget.pkg.github.com/O-ANcppLua/index.json" \
+            --name github \
+            --username "${{ github.actor }}" \
+            --password "${{ secrets.GITHUB_TOKEN }}" \
+            --store-password-in-clear-text
+
+      - name: Push .nupkg + .snupkg to GitHub Packages
+        run: |
+          dotnet nuget push "artifacts/*.nupkg" \
+            --source github \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --skip-duplicate
