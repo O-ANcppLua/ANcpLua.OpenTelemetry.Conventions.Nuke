@@ -1,0 +1,30 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <Company>Alexander Nachtmann</Company>
+    <Authors>Alexander Nachtmann</Authors>
+    <Copyright>Copyright (c) 2026 Alexander Nachtmann</Copyright>
+    <Product>Nuke.OpenTelemetry.Conventions</Product>
+
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/ANcpLua/Nuke.OpenTelemetry.Conventions</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/ANcpLua/Nuke.OpenTelemetry.Conventions</PackageProjectUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>

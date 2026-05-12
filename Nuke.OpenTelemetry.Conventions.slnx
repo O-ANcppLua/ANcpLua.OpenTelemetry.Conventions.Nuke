@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Nuke.OpenTelemetry.Conventions/Nuke.OpenTelemetry.Conventions.csproj" />
+  </Folder>
+</Solution>

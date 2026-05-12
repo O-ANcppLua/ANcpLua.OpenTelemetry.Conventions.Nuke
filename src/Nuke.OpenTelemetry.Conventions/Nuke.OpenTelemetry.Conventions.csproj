@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Nuke.Common 10.x ships only a net10.0 assembly. The original scaffold spec asked
+      for netstandard2.0, but Nuke.Common does not provide a netstandard2.0 surface, so
+      consumers (build hosts) already need a modern .NET SDK. Targeting net10.0 here
+      aligns with Nuke.Common 10.1.0 and the SDK pinned in global.json.
+    -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Nuke.OpenTelemetry.Conventions</RootNamespace>
+    <AssemblyName>Nuke.OpenTelemetry.Conventions</AssemblyName>
+
+    <IsPackable>true</IsPackable>
+    <PackageId>Nuke.OpenTelemetry.Conventions</PackageId>
+    <Title>Nuke.OpenTelemetry.Conventions</Title>
+    <Description>
+      Shared Nuke build component policy for the ANcpLua OpenTelemetry semantic-conventions toolchain.
+      Provides IUpstreamConventions (Weaver-based generator pipeline, lockstep verification) and
+      IDomainConventionsApi (downstream TypeSpec API pipeline) component interfaces, plus the
+      LockstepPolicy helper for {semconv}-{n} version-suffix parsing.
+    </Description>
+    <PackageTags>nuke;build;opentelemetry;semantic-conventions;weaver;typespec;ancplua</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile></PackageLicenseFile>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Authors>Alexander Nachtmann</Authors>
+    <RepositoryUrl>https://github.com/ANcpLua/Nuke.OpenTelemetry.Conventions</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nuke.Common" Version="10.1.0" />
+  </ItemGroup>
+
+  <!--
+    Transitive security overrides. Nuke.Common 10.1.0 pulls vulnerable transitive
+    versions of these packages; the override pins point at patched releases so that
+    NuGetAudit (which is on by default in .NET 10) does not flag the package or the
+    consumer build with TreatWarningsAsErrors enabled.
+      - NU1901: NuGet.Packaging <7.3.1   (https://github.com/advisories/GHSA-g4vj-cjjj-v7hg)
+      - NU1903: System.Security.Cryptography.Xml <10.0.7
+                (https://github.com/advisories/GHSA-37gx-xxp4-5rgx,
+                 https://github.com/advisories/GHSA-w3x6-4m5h-cxqf)
+    Revisit when Nuke.Common ships an update that bumps these transitively.
+  -->
+  <ItemGroup>
+    <PackageReference Include="NuGet.Packaging" Version="7.3.1" PrivateAssets="all" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.7" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
