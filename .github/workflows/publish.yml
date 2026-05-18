@@ -1,4 +1,4 @@
-name: Publish to GitHub Packages (NuGet)
+name: Publish to NuGet.org
 
 on:
   release:
@@ -6,13 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Override package version (semver, e.g. 0.1.0). Leave blank to use the csproj version.'
+        description: 'Override package version (semver, e.g. 0.1.0). Leave blank to use the release tag.'
         required: false
         default: ''
 
 permissions:
   contents: read
-  packages: write     # required to publish to GitHub Packages NuGet feed
   id-token: write     # reserved for future NuGet provenance attestations
 
 concurrency:
@@ -22,7 +21,6 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: github-packages
     steps:
       - uses: actions/checkout@v6
 
@@ -68,18 +66,11 @@ jobs:
             /p:Version=$PKG_VERSION \
             /p:ContinuousIntegrationBuild=true
 
-      - name: Add GitHub Packages NuGet source
-        run: |
-          dotnet nuget add source \
-            "https://nuget.pkg.github.com/O-ANcppLua/index.json" \
-            --name github \
-            --username "${{ github.actor }}" \
-            --password "${{ secrets.GITHUB_TOKEN }}" \
-            --store-password-in-clear-text
-
-      - name: Push .nupkg + .snupkg to GitHub Packages
+      - name: Push .nupkg + .snupkg to nuget.org
+        env:
+          NUGET_ORG_API_KEY: ${{ secrets.NUGET_ORG_API_KEY }}
         run: |
           dotnet nuget push "artifacts/*.nupkg" \
-            --source github \
-            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "$NUGET_ORG_API_KEY" \
             --skip-duplicate
