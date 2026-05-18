@@ -76,8 +76,8 @@ public static class LockstepPolicy
                 "with a non-empty semconv segment and a non-empty integer suffix.");
         }
 
-        string semconv = version.Substring(0, separator);
-        string suffix = version.Substring(separator + 1);
+        string semconv = version[..separator];
+        string suffix = version[(separator + 1)..];
 
         if (!int.TryParse(suffix, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n))
         {

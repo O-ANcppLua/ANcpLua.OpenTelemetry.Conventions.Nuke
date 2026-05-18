@@ -1,5 +1,14 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
 using Nuke.Common;
 using Nuke.Common.IO;
+using Nuke.Common.Tooling;
+using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.Git;
+using Nuke.Common.Tools.Npm;
+using Serilog;
 
 namespace Nuke.OpenTelemetry.Conventions;
 
@@ -23,8 +32,12 @@ namespace Nuke.OpenTelemetry.Conventions;
 /// }
 /// </code>
 /// <para>
-/// Targets are declaration-only stubs. Concrete bodies live in the consumer
-/// repository and are wired up via the standard Nuke component-override pattern.
+/// Targets ship with working default-interface bodies that enforce the lockstep,
+/// determinism, manual-edit, and pack-publish policy this package contributes.
+/// Consumer <c>Build</c> classes may override any individual target via the standard
+/// Nuke component-target override pattern when project-local specifics (custom emitter
+/// package ids, alternate output layouts) require it; otherwise the defaults are
+/// picked up unchanged.
 /// </para>
 /// </remarks>
 public interface IDomainConventionsApi : INukeBuild
@@ -64,7 +77,7 @@ public interface IDomainConventionsApi : INukeBuild
     Target RestoreTypeSpecDeps => _ => _
         .Executes(() =>
         {
-            // TODO: Invoke `npm ci` at DomainSpecRoot; respect the existing package-lock.json.
+            NpmTasks.NpmCi(s => s.SetProcessWorkingDirectory(DomainSpecRoot));
         });
 
     /// <summary>
@@ -78,10 +91,60 @@ public interface IDomainConventionsApi : INukeBuild
         .Requires(() => OtelKeysVersion)
         .Executes(() =>
         {
-            // TODO: Read package-lock.json, locate OtelKeysPackage entry, assert resolved
-            // TODO: version == OtelKeysVersion exactly (no semver range tolerance).
-            // TODO: Read node_modules/{OtelKeysPackage}/lib/otel-keys.tsp and diff bytewise
-            // TODO: against {DomainSpecRoot}/generated/otel-keys.gen.tsp. Fail on any drift.
+            // Validate the OtelKeysVersion format defensively; if it does not parse,
+            // surface a clear lockstep-policy violation before any further checks.
+            var parsedVersion = LockstepPolicy.ParseSemconvSuffixVersion(OtelKeysVersion);
+            Log.Debug("VerifyKeysLockstep: OtelKeysVersion '{Version}' parsed as semconv={Semconv} n={N}.",
+                OtelKeysVersion, parsedVersion.Semconv, parsedVersion.N);
+
+            var lockfile = DomainSpecRoot / "package-lock.json";
+            if (!File.Exists(lockfile))
+                throw new InvalidOperationException(
+                    $"VerifyKeysLockstep: {lockfile} not found. Run RestoreTypeSpecDeps first.");
+
+            string? resolvedVersion = null;
+            using (var doc = JsonDocument.Parse(File.ReadAllText(lockfile)))
+            {
+                if (doc.RootElement.TryGetProperty("packages", out var packages))
+                {
+                    var key = $"node_modules/{OtelKeysPackage}";
+                    if (packages.TryGetProperty(key, out var entry) &&
+                        entry.TryGetProperty("version", out var versionElement))
+                    {
+                        resolvedVersion = versionElement.GetString();
+                    }
+                }
+            }
+
+            if (resolvedVersion is null)
+                throw new InvalidOperationException(
+                    $"VerifyKeysLockstep: could not locate 'packages[\"node_modules/{OtelKeysPackage}\"].version' " +
+                    $"in {lockfile}. Is the upstream package installed?");
+
+            if (!string.Equals(resolvedVersion, OtelKeysVersion, StringComparison.Ordinal))
+                throw new InvalidOperationException(
+                    $"VerifyKeysLockstep: version drift — package-lock pins {OtelKeysPackage}@{resolvedVersion}, " +
+                    $"but OtelKeysVersion requires exactly {OtelKeysVersion}. " +
+                    "Update package-lock or change OtelKeysVersion; this is an exact-equality check.");
+
+            var shippedKeys = DomainSpecRoot / "node_modules" / OtelKeysPackage / "lib" / "otel-keys.tsp";
+            var committedKeys = DomainSpecRoot / "generated" / "otel-keys.gen.tsp";
+
+            if (!File.Exists(shippedKeys))
+                throw new InvalidOperationException(
+                    $"VerifyKeysLockstep: upstream keys file not found at {shippedKeys}.");
+            if (!File.Exists(committedKeys))
+                throw new InvalidOperationException(
+                    $"VerifyKeysLockstep: committed keys file not found at {committedKeys}.");
+
+            var diff = Helpers.BytewiseFileDiff(shippedKeys, committedKeys);
+            if (diff is not null)
+                throw new InvalidOperationException(
+                    $"VerifyKeysLockstep: keys-file drift — {diff}. " +
+                    $"Regenerate {committedKeys} from {shippedKeys} (do not hand-edit).");
+
+            Log.Information("VerifyKeysLockstep: {Package}@{Version} pinned exactly, keys byte-identical.",
+                OtelKeysPackage, OtelKeysVersion);
         });
 
     /// <summary>
@@ -92,42 +155,30 @@ public interface IDomainConventionsApi : INukeBuild
         .DependsOn(VerifyKeysLockstep)
         .Executes(() =>
         {
-            // TODO: Invoke `tsp compile index.tsp --no-emit --warn-as-error` at DomainSpecRoot.
+            NpmTasks.Npm(
+                "exec --no -- tsp compile index.tsp --no-emit --warn-as-error",
+                workingDirectory: DomainSpecRoot);
         });
 
     /// <summary>Run the C# emitter, writing under <c>{EmitOutputDir}/csharp</c>.</summary>
     Target EmitCSharp => _ => _
         .DependsOn(CompileDomainSpec)
-        .Executes(() =>
-        {
-            // TODO: Invoke `tsp compile index.tsp --emit @typespec/http-client-csharp`
-            // TODO: (or the configured C# emitter) with output-dir EmitOutputDir/csharp.
-        });
+        .Executes(() => RunDomainEmitter(this, "csharp"));
 
     /// <summary>Run the DuckDB emitter, writing under <c>{EmitOutputDir}/duckdb</c>.</summary>
     Target EmitDuckDb => _ => _
         .DependsOn(CompileDomainSpec)
-        .Executes(() =>
-        {
-            // TODO: Invoke the DuckDB schema emitter against the domain spec; output to
-            // TODO: EmitOutputDir/duckdb. The emitter is provided by the downstream repo.
-        });
+        .Executes(() => RunDomainEmitter(this, "duckdb"));
 
     /// <summary>Run the TypeScript types emitter, writing under <c>{EmitOutputDir}/ts-types</c>.</summary>
     Target EmitTsTypes => _ => _
         .DependsOn(CompileDomainSpec)
-        .Executes(() =>
-        {
-            // TODO: Invoke the TypeScript types emitter; output to EmitOutputDir/ts-types.
-        });
+        .Executes(() => RunDomainEmitter(this, "ts-types"));
 
     /// <summary>Run the lint emitter / conventions linter, writing under <c>{EmitOutputDir}/lint</c>.</summary>
     Target LintConventions => _ => _
         .DependsOn(CompileDomainSpec)
-        .Executes(() =>
-        {
-            // TODO: Invoke the conventions linter; surface findings as build warnings/errors.
-        });
+        .Executes(() => RunDomainEmitter(this, "lint"));
 
     /// <summary>
     /// Aggregate target that runs every emitter in <see cref="Emitters"/>: by default
@@ -138,7 +189,7 @@ public interface IDomainConventionsApi : INukeBuild
         .DependsOn(EmitCSharp, EmitDuckDb, EmitTsTypes, LintConventions)
         .Executes(() =>
         {
-            // TODO: This aggregate is a barrier target; individual emitters do the work.
+            Log.Information("EmitAll: dependency graph complete.");
         });
 
     /// <summary>
@@ -149,8 +200,36 @@ public interface IDomainConventionsApi : INukeBuild
         .DependsOn(VerifyKeysLockstep)
         .Executes(() =>
         {
-            // TODO: Run each emitter twice into separate scratch dirs, diff bytewise;
-            // TODO: respect EmitFailOnDrift.
+            foreach (var name in Emitters)
+            {
+                var pkg = Helpers.ResolveDomainEmitterPackage(name);
+                var dirA = TemporaryDirectory / $"emit-{name}-A" / Guid.NewGuid().ToString("N")[..8];
+                var dirB = TemporaryDirectory / $"emit-{name}-B" / Guid.NewGuid().ToString("N")[..8];
+                dirA.CreateOrCleanDirectory();
+                dirB.CreateOrCleanDirectory();
+
+                var env = Helpers.DeterministicProcessEnv();
+                NpmTasks.Npm(
+                    $"exec --no -- tsp compile index.tsp --emit \"{pkg}\" --output-dir \"{dirA}\"",
+                    workingDirectory: DomainSpecRoot,
+                    environmentVariables: env);
+                NpmTasks.Npm(
+                    $"exec --no -- tsp compile index.tsp --emit \"{pkg}\" --output-dir \"{dirB}\"",
+                    workingDirectory: DomainSpecRoot,
+                    environmentVariables: env);
+
+                var diff = Helpers.BytewiseDirectoryDiff(dirA, dirB);
+                if (diff is null)
+                {
+                    Log.Information("VerifyEmitDeterministic: '{Emitter}' is deterministic.", name);
+                    continue;
+                }
+
+                var msg = $"VerifyEmitDeterministic: emitter '{name}' is non-deterministic — {diff}";
+                if (EmitFailOnDrift)
+                    throw new InvalidOperationException(msg);
+                Log.Warning(msg);
+            }
         });
 
     /// <summary>Run <c>dotnet build</c> on the C# emitter output to validate the generated project.</summary>
@@ -158,7 +237,10 @@ public interface IDomainConventionsApi : INukeBuild
         .DependsOn(EmitCSharp)
         .Executes(() =>
         {
-            // TODO: `dotnet build {EmitOutputDir}/csharp -c Release --nologo`.
+            DotNetTasks.DotNetBuild(s => s
+                .SetProjectFile(EmitOutputDir / "csharp")
+                .SetConfiguration("Release")
+                .EnableNoLogo());
         });
 
     /// <summary>
@@ -168,7 +250,37 @@ public interface IDomainConventionsApi : INukeBuild
     Target VerifyNoManualEditsToGenerated => _ => _
         .Executes(() =>
         {
-            // TODO: Run `git diff --quiet -- {DomainSpecRoot}/generated/`; fail on non-zero.
+            var generated = DomainSpecRoot / "generated";
+            if (!Directory.Exists(generated))
+            {
+                Log.Information("VerifyNoManualEditsToGenerated: {Path} not present, skipping.", generated);
+                return;
+            }
+
+            var exitCode = ProcessTasks.StartProcess(
+                    "git",
+                    $"diff --quiet -- \"{generated}\"",
+                    workingDirectory: DomainSpecRoot,
+                    logInvocation: false,
+                    logOutput: false)
+                .AssertWaitForExit()
+                .ExitCode;
+
+            if (exitCode == 0)
+            {
+                Log.Information("VerifyNoManualEditsToGenerated: {Path} is clean.", generated);
+                return;
+            }
+
+            // Re-run without --quiet so the offending diff appears in the build log.
+            ProcessTasks.StartProcess(
+                    "git",
+                    $"diff -- \"{generated}\"",
+                    workingDirectory: DomainSpecRoot)
+                .AssertWaitForExit();
+            throw new InvalidOperationException(
+                $"VerifyNoManualEditsToGenerated: {generated} contains uncommitted changes; " +
+                "regenerate via EmitAll instead of hand-editing.");
         });
 
     /// <summary>Run <c>npm pack</c> for the downstream API package.</summary>
@@ -176,7 +288,7 @@ public interface IDomainConventionsApi : INukeBuild
         .DependsOn(VerifyKeysLockstep, VerifyEmitDeterministic, VerifyNoManualEditsToGenerated, CompileDomainSpec)
         .Executes(() =>
         {
-            // TODO: Invoke `npm pack` at DomainSpecRoot and surface the tarball path.
+            NpmTasks.Npm("pack", workingDirectory: DomainSpecRoot);
         });
 
     /// <summary>
@@ -187,7 +299,25 @@ public interface IDomainConventionsApi : INukeBuild
         .DependsOn(PackApiPackage)
         .Executes(() =>
         {
-            // TODO: `npm publish --provenance --registry=https://npm.pkg.github.com`
-            // TODO: using the @o-ancpplua scope; require a NODE_AUTH_TOKEN with write:packages.
+            var token = Environment.GetEnvironmentVariable("NODE_AUTH_TOKEN");
+            if (string.IsNullOrWhiteSpace(token))
+                throw new InvalidOperationException(
+                    "PublishApiPackage: NODE_AUTH_TOKEN env var is required " +
+                    "(GitHub Packages npm token with write:packages scope).");
+
+            NpmTasks.Npm(
+                "publish --access public --provenance --registry=https://npm.pkg.github.com",
+                workingDirectory: DomainSpecRoot);
         });
+
+    private static void RunDomainEmitter(IDomainConventionsApi build, string name)
+    {
+        var pkg = Helpers.ResolveDomainEmitterPackage(name);
+        var outDir = build.EmitOutputDir / name;
+        outDir.CreateOrCleanDirectory();
+        NpmTasks.Npm(
+            $"exec --no -- tsp compile index.tsp --emit \"{pkg}\" --output-dir \"{outDir}\"",
+            workingDirectory: build.DomainSpecRoot,
+            environmentVariables: Helpers.DeterministicProcessEnv());
+    }
 }
