@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 #
-# CodeRabbit Pro+ / Enterprise-grade review configuration for O-ANcppLua/Nuke.OpenTelemetry.Conventions.
+# CodeRabbit Pro+ / Enterprise-grade review configuration for O-ANcppLua/Nuke.OpenTelemetry.Conventions (package: OtelConventions.Nuke).
 # Generated 2026-05-16 from the current schema-backed configuration reference.
 #
 # Repository context: NUKE-based generation and packaging for OpenTelemetry semantic conventions.

@@ -1,4 +1,4 @@
-# Nuke.OpenTelemetry.Conventions (source)
+# OtelConventions.Nuke (source)
 
 Implementation details for the shared Nuke component package. See the
 [repository README](../../README.md) for consumer-facing documentation.

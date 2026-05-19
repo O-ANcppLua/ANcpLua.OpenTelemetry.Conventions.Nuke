@@ -10,7 +10,7 @@ using Nuke.Common.Tools.Git;
 using Nuke.Common.Tools.Npm;
 using Serilog;
 
-namespace Nuke.OpenTelemetry.Conventions;
+namespace OtelConventions.Nuke;
 
 /// <summary>
 /// Nuke build component implemented by the downstream API-surface repository

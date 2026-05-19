@@ -8,12 +8,12 @@
       aligns with Nuke.Common 10.1.0 and the SDK pinned in global.json.
     -->
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>Nuke.OpenTelemetry.Conventions</RootNamespace>
-    <AssemblyName>Nuke.OpenTelemetry.Conventions</AssemblyName>
+    <RootNamespace>OtelConventions.Nuke</RootNamespace>
+    <AssemblyName>OtelConventions.Nuke</AssemblyName>
 
     <IsPackable>true</IsPackable>
-    <PackageId>Nuke.OpenTelemetry.Conventions</PackageId>
-    <Title>Nuke.OpenTelemetry.Conventions</Title>
+    <PackageId>OtelConventions.Nuke</PackageId>
+    <Title>OtelConventions.Nuke</Title>
     <Description>
       Shared Nuke build component policy for the ANcpLua OpenTelemetry semantic-conventions toolchain.
       Provides IUpstreamConventions (Weaver-based generator pipeline, lockstep verification) and
@@ -25,7 +25,7 @@
     <PackageLicenseFile></PackageLicenseFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Authors>Alexander Nachtmann</Authors>
-    <RepositoryUrl>https://github.com/ANcpLua/Nuke.OpenTelemetry.Conventions</RepositoryUrl>
+    <RepositoryUrl>https://github.com/O-ANcppLua/Nuke.OpenTelemetry.Conventions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 

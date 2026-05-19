@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Json;
 using Nuke.Common.IO;
 
-namespace Nuke.OpenTelemetry.Conventions;
+namespace OtelConventions.Nuke;
 
 /// <summary>
 /// Internal helpers shared by <see cref="IUpstreamConventions"/> and

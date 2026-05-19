@@ -1,4 +1,4 @@
-# Nuke.OpenTelemetry.Conventions
+# OtelConventions.Nuke
 
 Shared [Nuke](https://nuke.build) build-component policy for the ANcpLua
 OpenTelemetry semantic-conventions toolchain. This package does not generate or
