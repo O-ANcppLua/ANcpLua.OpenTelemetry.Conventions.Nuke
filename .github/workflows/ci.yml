@@ -23,13 +23,13 @@ jobs:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore OtelConventions.Nuke.slnx
+        run: dotnet restore ANcpLua.OpenTelemetry.Conventions.Nuke.slnx
 
       - name: Build (Release)
-        run: dotnet build OtelConventions.Nuke.slnx -c Release --no-restore
+        run: dotnet build ANcpLua.OpenTelemetry.Conventions.Nuke.slnx -c Release --no-restore
 
       - name: Pack (Release)
-        run: dotnet pack src/OtelConventions.Nuke/OtelConventions.Nuke.csproj -c Release --no-build -o artifacts
+        run: dotnet pack src/ANcpLua.OpenTelemetry.Conventions.Nuke/ANcpLua.OpenTelemetry.Conventions.Nuke.csproj -c Release --no-build -o artifacts
 
       - name: Upload .nupkg artifact
         uses: actions/upload-artifact@v4

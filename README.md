@@ -1,4 +1,4 @@
-# OtelConventions.Nuke
+# ANcpLua.OpenTelemetry.Conventions.Nuke
 
 Shared [Nuke](https://nuke.build) build-component policy for the ANcpLua
 OpenTelemetry semantic-conventions toolchain. This package does not generate or
@@ -51,7 +51,7 @@ parameter) lands in **one** place.
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Nuke.OpenTelemetry.Conventions" Version="0.1.0" />
+  <PackageReference Include="ANcpLua.OpenTelemetry.Conventions.Nuke" Version="0.1.0" />
 </ItemGroup>
 ```
 
@@ -61,7 +61,7 @@ parameter) lands in **one** place.
 
 ```csharp
 using Nuke.Common;
-using Nuke.OpenTelemetry.Conventions;
+using ANcpLua.OpenTelemetry.Conventions.Nuke;
 
 class Build : NukeBuild, IUpstreamConventions
 {
@@ -81,7 +81,7 @@ Targets the consumer overrides (typical):
 
 ```csharp
 using Nuke.Common;
-using Nuke.OpenTelemetry.Conventions;
+using ANcpLua.OpenTelemetry.Conventions.Nuke;
 
 class Build : NukeBuild, IDomainConventionsApi
 {

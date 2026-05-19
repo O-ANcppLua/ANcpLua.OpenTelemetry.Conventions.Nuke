@@ -1,6 +1,6 @@
 name: Publish to NuGet.org
 
-# Publishes OtelConventions.Nuke (formerly Nuke.OpenTelemetry.Conventions —
+# Publishes ANcpLua.OpenTelemetry.Conventions.Nuke (formerly Nuke.OpenTelemetry.Conventions —
 # renamed away from the nukebuild-reserved `Nuke.*` prefix on nuget.org).
 # Pushes to https://api.nuget.org/v3/index.json using a glob-scoped API key.
 
@@ -57,14 +57,14 @@ jobs:
           echo "Resolved version: $version"
 
       - name: Restore
-        run: dotnet restore OtelConventions.Nuke.slnx
+        run: dotnet restore ANcpLua.OpenTelemetry.Conventions.Nuke.slnx
 
       - name: Build (Release)
-        run: dotnet build OtelConventions.Nuke.slnx -c Release --no-restore /p:Version=$PKG_VERSION
+        run: dotnet build ANcpLua.OpenTelemetry.Conventions.Nuke.slnx -c Release --no-restore /p:Version=$PKG_VERSION
 
       - name: Pack (Release)
         run: |
-          dotnet pack src/OtelConventions.Nuke/OtelConventions.Nuke.csproj \
+          dotnet pack src/ANcpLua.OpenTelemetry.Conventions.Nuke/ANcpLua.OpenTelemetry.Conventions.Nuke.csproj \
             -c Release --no-build \
             -o artifacts \
             /p:Version=$PKG_VERSION \

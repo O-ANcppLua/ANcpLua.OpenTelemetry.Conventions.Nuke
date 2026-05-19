@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ANcpLua.OpenTelemetry.Conventions.Nuke/ANcpLua.OpenTelemetry.Conventions.Nuke.csproj" />
+  </Folder>
+</Solution>

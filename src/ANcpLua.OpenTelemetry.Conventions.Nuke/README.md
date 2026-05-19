@@ -1,4 +1,4 @@
-# OtelConventions.Nuke (source)
+# ANcpLua.OpenTelemetry.Conventions.Nuke (source)
 
 Implementation details for the shared Nuke component package. See the
 [repository README](../../README.md) for consumer-facing documentation.

@@ -14,11 +14,11 @@
     <Company>Alexander Nachtmann</Company>
     <Authors>Alexander Nachtmann</Authors>
     <Copyright>Copyright (c) 2026 Alexander Nachtmann</Copyright>
-    <Product>OtelConventions.Nuke</Product>
+    <Product>ANcpLua.OpenTelemetry.Conventions.Nuke</Product>
 
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/O-ANcppLua/Nuke.OpenTelemetry.Conventions</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/O-ANcppLua/Nuke.OpenTelemetry.Conventions</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/O-ANcppLua/ANcpLua.OpenTelemetry.Conventions.Nuke</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/O-ANcppLua/ANcpLua.OpenTelemetry.Conventions.Nuke</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

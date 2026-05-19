@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using Nuke.Common;
 
-namespace OtelConventions.Nuke;
+namespace ANcpLua.OpenTelemetry.Conventions.Nuke;
 
 /// <summary>
 /// Helpers for resolving <see cref="ParameterAttribute"/>-decorated default-interface

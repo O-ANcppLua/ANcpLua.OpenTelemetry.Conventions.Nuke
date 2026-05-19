@@ -10,7 +10,7 @@ using Nuke.Common.Tools.Git;
 using Nuke.Common.Tools.Npm;
 using Serilog;
 
-namespace OtelConventions.Nuke;
+namespace ANcpLua.OpenTelemetry.Conventions.Nuke;
 
 /// <summary>
 /// Nuke build component implemented by the upstream Weaver-based generator repository

@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace OtelConventions.Nuke;
+namespace ANcpLua.OpenTelemetry.Conventions.Nuke;
 
 /// <summary>
 /// Shared lockstep-policy helpers used by both the upstream generator
