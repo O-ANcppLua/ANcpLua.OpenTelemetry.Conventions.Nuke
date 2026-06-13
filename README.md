@@ -28,9 +28,9 @@ and API surfaces in lockstep.
                                           |
                                           v
                       +---------------------------------------+
-                      | O-ANcppLua/ANcpLua.OtelConventions.Api|
+                      | ANcpLua/ANcpLua.OtelConventions.Api|
                       | implements IDomainConventionsApi      |
-                      | publishes @o-ancpplua/otel-           |
+                      | publishes @ancplua/otel-           |
                       |   conventions-api                     |
                       +---------------------------------------+
 ```
@@ -45,7 +45,7 @@ parameter) lands in **one** place.
 | Interface | Consumer repository | npm package published |
 | --- | --- | --- |
 | `IUpstreamConventions` | [`ANcpLua/typespec-otel-semconv`](https://github.com/ANcpLua/typespec-otel-semconv) | `@ancplua/typespec-otel-semconv@{semconv}-{n}` |
-| `IDomainConventionsApi` | [`O-ANcppLua/ANcpLua.OtelConventions.Api`](https://github.com/O-ANcppLua/ANcpLua.OtelConventions.Api) | `@o-ancpplua/otel-conventions-api` |
+| `IDomainConventionsApi` | [`ANcpLua/ANcpLua.OtelConventions.Api`](https://github.com/ANcpLua/ANcpLua.OtelConventions.Api) | `@ancplua/otel-conventions-api` |
 
 ## Install
 

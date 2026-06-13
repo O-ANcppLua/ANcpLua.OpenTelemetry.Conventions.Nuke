@@ -17,8 +17,8 @@
     <Product>ANcpLua.OpenTelemetry.Conventions.Nuke</Product>
 
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/O-ANcppLua/ANcpLua.OpenTelemetry.Conventions.Nuke</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/O-ANcppLua/ANcpLua.OpenTelemetry.Conventions.Nuke</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/ANcpLua/ANcpLua.OpenTelemetry.Conventions.Nuke</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/ANcpLua/ANcpLua.OpenTelemetry.Conventions.Nuke</PackageProjectUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

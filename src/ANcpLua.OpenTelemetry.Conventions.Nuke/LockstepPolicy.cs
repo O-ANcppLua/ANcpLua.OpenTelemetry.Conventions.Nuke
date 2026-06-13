@@ -6,7 +6,7 @@ namespace ANcpLua.OpenTelemetry.Conventions.Nuke;
 /// <summary>
 /// Shared lockstep-policy helpers used by both the upstream generator
 /// (<c>@ancplua/typespec-otel-semconv</c>) and the downstream API surface
-/// (<c>@o-ancpplua/otel-conventions-api</c>) builds.
+/// (<c>@ancplua/otel-conventions-api</c>) builds.
 /// </summary>
 /// <remarks>
 /// The upstream generator publishes its npm package using the version scheme

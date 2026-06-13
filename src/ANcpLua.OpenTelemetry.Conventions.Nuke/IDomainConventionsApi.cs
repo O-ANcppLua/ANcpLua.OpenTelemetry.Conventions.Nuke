@@ -14,8 +14,8 @@ namespace ANcpLua.OpenTelemetry.Conventions.Nuke;
 
 /// <summary>
 /// Nuke build component implemented by the downstream API-surface repository
-/// (<c>O-ANcppLua/ANcpLua.OtelConventions.Api</c>, publishing
-/// <c>@o-ancpplua/otel-conventions-api</c> to GitHub Packages npm).
+/// (<c>ANcpLua/ANcpLua.OtelConventions.Api</c>, publishing
+/// <c>@ancplua/otel-conventions-api</c> to GitHub Packages npm).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -293,7 +293,7 @@ public interface IDomainConventionsApi : INukeBuild
 
     /// <summary>
     /// Run <c>npm publish --provenance</c> against the GitHub Packages npm registry
-    /// for the <c>@o-ancpplua</c> scope.
+    /// for the <c>@ancplua</c> scope.
     /// </summary>
     Target PublishApiPackage => _ => _
         .DependsOn(PackApiPackage)

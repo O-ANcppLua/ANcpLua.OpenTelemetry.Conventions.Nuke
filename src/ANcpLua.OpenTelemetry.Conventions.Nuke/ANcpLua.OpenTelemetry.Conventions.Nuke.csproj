@@ -25,7 +25,7 @@
     <PackageLicenseFile></PackageLicenseFile>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Authors>Alexander Nachtmann</Authors>
-    <RepositoryUrl>https://github.com/O-ANcppLua/ANcpLua.OpenTelemetry.Conventions.Nuke</RepositoryUrl>
+    <RepositoryUrl>https://github.com/ANcpLua/ANcpLua.OpenTelemetry.Conventions.Nuke</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
